@@ -95,3 +95,174 @@
 .btn-salvar { width: 100%; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
 .btn-salvar:hover { background: #2563eb; }
 .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* =========================================
+   CUSTOMIZAÇÃO DO SWEETALERT2 (ALERTAS)
+   ========================================= */
+.swal2-popup {
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 20px !important;
+  font-family: inherit !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6) !important;
+}
+
+.swal2-title {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+}
+
+.swal2-html-container {
+  font-size: 0.95rem !important;
+  opacity: 0.8 !important;
+}
+
+.swal2-actions {
+  gap: 15px !important;
+}
+
+.swal2-confirm, .swal2-cancel {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  padding: 12px 24px !important;
+  font-size: 0.9rem !important;
+}
+
+.swal-cancel-btn {
+  background: transparent !important;
+  border: 1px solid rgba(255, 77, 77, 0.4) !important;
+  transition: all 0.2s ease;
+}
+
+.swal-cancel-btn:hover {
+  background: rgba(255, 77, 77, 0.1) !important;
+  border-color: rgba(255, 77, 77, 0.8) !important;
+}
+
+/* =========================================
+   RESPONSIVIDADE (TELA DE CELULAR)
+   ========================================= */
+@media (max-width: 768px) {
+  /* 1. Ajusta o Cabeçalho da Empresa */
+  .detalhes-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    padding: 20px 15px;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .os-title {
+    font-size: 1.6rem !important;
+  }
+
+  .detalhes-cnpj-container {
+    margin: 10px auto 0;
+  }
+
+  /* 2. Ajusta os botões do topo para não ficarem espremidos */
+  .detalhes-header > div:last-child {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-novo-doc, .btn-voltar {
+    flex: 1;
+    text-align: center;
+    min-width: 140px;
+  }
+
+  /* 3. Esconde o cabeçalho da tabela */
+  .doc-header-labels {
+    display: none !important;
+  }
+
+  /* 4. Transforma a linha da tabela em um "Cartão" */
+  .categoria-box {
+    padding: 15px;
+  }
+
+  .doc-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 20px !important;
+  }
+
+  /* 5. Quebra a linha do nome se for muito grande */
+  .doc-nome {
+    width: 100%;
+    white-space: normal;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+  }
+
+  /* 6. Adiciona "Rótulos Mágicos" nas datas */
+  .valor-data {
+    width: 100% !important;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+  
+  .valor-data:nth-child(2)::before {
+    content: "Vencimento: ";
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    margin-right: 8px;
+  }
+
+  .valor-data:nth-child(3)::before {
+    content: "Inserido em: ";
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    margin-right: 8px;
+  }
+
+  /* 7. Ajusta a pílula de status e os botões de ação */
+  .status-col {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 5px;
+  }
+
+  .doc-acoes-wrapper {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .btn-acoes {
+    width: 100%;
+    padding: 12px 0;
+  }
+
+  /* 8. Ajusta o menu suspenso */
+  .menu-dropdown {
+    width: 100%;
+    left: 0;
+    right: auto;
+  }
+
+  /* 9. Ajusta o tamanho da janela de novo documento/PDFs */
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .arquivo-linha {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .arquivo-linha > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
