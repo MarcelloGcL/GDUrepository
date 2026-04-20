@@ -1,0 +1,97 @@
+.detalhes-container { padding: 20px; }
+
+.detalhes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.header-left { display: flex; align-items: center; gap: 20px; }
+.header-logo-container { width: 65px; height: 65px; background: white; border-radius: 50%; padding: 8px; display: flex; align-items: center; justify-content: center; }
+.header-logo-img { width: 100%; height: 100%; object-fit: contain; }
+.os-title { font-size: 2.2rem !important; font-weight: 800; margin: 0 !important; color: #fff; }
+
+.detalhes-cnpj-container {
+  display: flex;
+  background: #1e293b;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 5px;
+  width: fit-content;
+}
+.cnpj-label { background: #3b82f6; color: white; font-size: 0.6rem; font-weight: 900; padding: 3px 7px; }
+.cnpj-value { color: #fff; font-size: 0.75rem; font-weight: 600; padding: 3px 9px; letter-spacing: 0.5px; }
+
+.btn-voltar { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+
+.btn-novo-doc { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
+.btn-novo-doc:hover { background: #2563eb; }
+
+.categoria-box { background: rgba(255, 255, 255, 0.02); border-radius: 16px; padding: 25px; margin-bottom: 30px; border: 1px solid rgba(255, 255, 255, 0.05); }
+
+.doc-header-labels {
+  display: flex;
+  flex-direction: row;
+  padding: 0 20px 10px 20px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.doc-header-labels > div:nth-child(1) { flex: 3; text-align: left; }
+.doc-header-labels > div:nth-child(2) { flex: 1; text-align: center; }
+.doc-header-labels > div:nth-child(3) { flex: 1; text-align: center; }
+.doc-header-labels > div:nth-child(4) { flex: 1; text-align: center; }
+.doc-header-labels > div:nth-child(5) { flex: 1; text-align: right; }
+
+.doc-item {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  padding: 15px 20px !important;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  gap: 0 !important;
+}
+
+.doc-nome { flex: 3; min-width: 0; font-weight: 600; color: #fff; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.valor-data { flex: 1 !important; min-width: 0; font-size: 0.85rem; opacity: 0.8; text-align: center; white-space: nowrap; }
+.status-col { flex: 1; min-width: 0; display: flex; justify-content: center; align-items: center; }
+
+.status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; white-space: nowrap; }
+.habilitado { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.vencido { background: rgba(255, 77, 77, 0.15); color: #ff4d4d; }
+.proximo { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+.doc-acoes-wrapper { flex: 1; min-width: 0; display: flex; justify-content: flex-end; position: relative; }
+
+.btn-acoes { background: #3b82f6; color: white; border: none; padding: 8px 0; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 110px; text-align: center; white-space: nowrap; }
+
+.menu-dropdown { position: absolute; top: 100%; right: 0; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; width: 170px; z-index: 100; margin-top: 5px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+
+.menu-item { width: 100%; padding: 10px 15px; background: transparent; border: none; color: white; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
+.menu-item:hover { background: rgba(255,255,255,0.05); color: #3b82f6; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; position: relative; }
+.modal-close-x { position: absolute; top: 15px; right: 20px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 28px; cursor: pointer; }
+.arquivo-linha { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 12px; }
+.btn-remover-file { background: rgba(255,77,77,0.1); color: #ff4d4d; border: 1px solid rgba(255,77,77,0.2); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 700; }
+
+.campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.campo label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+.campo input, .campo select { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 14px; color: white; font-size: 0.9rem; outline: none; }
+.campo input:focus, .campo select:focus { border-color: #3b82f6; }
+.campo select option { background: #1e293b; color: white; }
+
+.btn-salvar { width: 100%; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
+.btn-salvar:hover { background: #2563eb; }
+.btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
