@@ -1,3 +1,5 @@
+.home-content { padding: 20px; }
+
 .home-header {
   display: flex;
   align-items: center;
@@ -16,9 +18,225 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .btn-nova-empresa:hover { background: #2563eb; }
 
+.btn-editais {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-editais:hover { background: rgba(255, 255, 255, 0.15); }
+
+/* =========================================
+   BALÃO DO CALENDÁRIO
+   ========================================= */
+.calendario-balao {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 380px;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 20px;
+  z-index: 500;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.calendario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.btn-novo-edital {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-novo-edital:hover { background: #2563eb; }
+
+.btn-voltar-cal {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0;
+  margin-bottom: 10px;
+}
+.btn-voltar-cal:hover { color: #fff; }
+
+.cal-mes-titulo {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #3b82f6;
+  margin-bottom: 14px;
+}
+
+/* Grade de meses */
+.calendario-meses {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.mes-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.mes-item:hover { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
+.mes-com-edital { border-color: rgba(59, 130, 246, 0.4) !important; background: rgba(59, 130, 246, 0.08) !important; }
+
+.mes-nome { font-size: 0.8rem; font-weight: 600; color: #fff; }
+.mes-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #3b82f6;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Grade de dias */
+.calendario-dias {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dia-item {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  cursor: default;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.dia-com-edital {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #fff !important;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  cursor: pointer !important;
+}
+.dia-com-edital:hover { background: rgba(59, 130, 246, 0.3) !important; }
+
+.dia-ponto {
+  width: 5px;
+  height: 5px;
+  background: #3b82f6;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 3px;
+}
+
+/* Lista de editais do dia */
+.editais-lista { display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto; }
+
+.edital-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.edital-empresa {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.edital-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: white;
+  object-fit: contain;
+  padding: 3px;
+}
+
+.edital-empresa-nome {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.edital-arquivo {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 4px;
+}
+
+.btn-edital-abrir {
+  background: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-edital-abrir:hover { background: rgba(59,130,246,0.1); }
+
+.btn-edital-remover {
+  background: rgba(255,77,77,0.1);
+  color: #ff4d4d;
+  border: 1px solid rgba(255,77,77,0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-edital-remover:hover { background: rgba(255,77,77,0.2); }
+
+/* =========================================
+   CARDS DE EMPRESAS
+   ========================================= */
 .os-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -40,11 +258,7 @@
   align-items: center;
   gap: 8px;
 }
-
-.os-card:hover {
-  transform: translateY(-10px);
-  border-color: #3b82f6;
-}
+.os-card:hover { transform: translateY(-10px); border-color: #3b82f6; }
 
 .os-icon-container {
   width: 100px;
@@ -58,18 +272,20 @@
   align-items: center;
   justify-content: center;
 }
-
 .os-logo-img { width: 100%; height: 100%; object-fit: contain; }
 .os-name { font-size: 1.1rem; font-weight: 700; color: #fff; }
 .os-cnpj { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
 
+/* =========================================
+   MODAIS
+   ========================================= */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; position: relative; }
 .modal-close-x { position: absolute; top: 15px; right: 20px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 28px; cursor: pointer; }
 
 .campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .campo label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; }
-.campo input {
+.campo input, .campo select {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
@@ -78,23 +294,25 @@
   font-size: 0.9rem;
   outline: none;
 }
-.campo input:focus { border-color: #3b82f6; }
+.campo input:focus, .campo select:focus { border-color: #3b82f6; }
+.campo select option { background: #1e293b; color: white; }
 
-.btn-salvar {
-  width: 100%;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 8px;
-}
+.btn-salvar { width: 100%; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
 .btn-salvar:hover { background: #2563eb; }
 .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* SweetAlert2 */
+.swal2-popup { border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 20px !important; font-family: inherit !important; }
+.swal2-confirm, .swal2-cancel { border-radius: 10px !important; font-weight: 700 !important; padding: 12px 24px !important; }
+.swal-cancel-btn { background: transparent !important; border: 1px solid rgba(255,77,77,0.4) !important; }
+.swal-cancel-btn:hover { background: rgba(255,77,77,0.1) !important; }
+
+/* =========================================
+   RESPONSIVO
+   ========================================= */
 @media (max-width: 1100px) { .os-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 768px) { .os-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .os-grid { grid-template-columns: repeat(2, 1fr); }
+  .calendario-balao { width: calc(100vw - 40px); right: -20px; }
+}
 @media (max-width: 480px) { .os-grid { grid-template-columns: 1fr; } }
