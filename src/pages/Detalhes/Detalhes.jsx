@@ -42,11 +42,9 @@ const calcularStatus = (v_date) => {
   hoje.setHours(0, 0, 0, 0);
   const vencimento = new Date(v_date);
   vencimento.setHours(0, 0, 0, 0);
-  
   const diffDias = Math.ceil((vencimento - hoje) / (1000 * 60 * 60 * 24));
-
-  if (diffDias < 0) return 'vencido'; // Já passou da data
-  if (diffDias <= 3) return 'proximo'; // Faltam 3 dias ou menos
+  if (diffDias < 0) return 'vencido';
+  if (diffDias <= 3) return 'proximo';
   return 'habilitado';
 };
 
@@ -61,11 +59,7 @@ const Detalhes = () => {
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [uploadando, setUploadando] = useState(false);
-  const [novoDoc, setNovoDoc] = useState({
-    categoria: CATEGORIAS[0],
-    nome: '',
-    v_date: ''
-  });
+  const [novoDoc, setNovoDoc] = useState({ categoria: CATEGORIAS[0], nome: '' });
   const emailEnviadoRef = useRef(false);
 
   useEffect(() => {
@@ -87,40 +81,29 @@ const Detalhes = () => {
 
   const verificarEEnviarEmail = (lista) => {
     if (emailEnviadoRef.current) return;
-
     const criticos = lista.filter(d => {
       const status = calcularStatus(d.v_date);
       return status === 'proximo' || status === 'vencido';
     });
-
     if (criticos.length === 0) return;
-
     const textoDocumentos = criticos.map(d => {
       const status = calcularStatus(d.v_date);
       const emoji = status === 'vencido' ? '🔴' : '🟡';
       return `${emoji} ${d.nome} - Vencimento: ${formatarDataBR(d.v_date)} - Status: ${status === 'vencido' ? 'VENCIDO' : 'PRÓXIMO DO VENCIMENTO'}`;
     }).join('\n');
-
-    emailjs.send(
-      EMAILJS_SERVICE_ID,
-      EMAILJS_TEMPLATE_ID,
-      {
-        empresa: empresa.name,
-        documentos: textoDocumentos,
-        name: 'Sistema de Gestão TechOS',
-        email: 'sistema@gestao.com'
-      },
-      EMAILJS_PUBLIC_KEY
-    ).then(() => {
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      empresa: empresa.name,
+      documentos: textoDocumentos,
+      name: 'Sistema de Gestão TechOS',
+      email: 'sistema@gestao.com'
+    }, EMAILJS_PUBLIC_KEY).then(() => {
       emailEnviadoRef.current = true;
-    }).catch((error) => {
-      console.error('Erro ao enviar email:', error);
-    });
+    }).catch(console.error);
   };
 
   const salvarDocumento = async () => {
-    if (!novoDoc.nome || !novoDoc.v_date) {
-      return swalDark.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha todos os campos!' });
+    if (!novoDoc.nome) {
+      return swalDark.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha o nome do documento!' });
     }
     setSalvando(true);
     try {
@@ -129,11 +112,12 @@ const Detalhes = () => {
       await addDoc(collection(db, 'empresas', empresa.id, 'documentos'), {
         ...novoDoc,
         i_date,
-        status: calcularStatus(novoDoc.v_date),
+        v_date: '',
+        status: 'habilitado',
         arquivos: [],
         criadoEm: new Date()
       });
-      setNovoDoc({ categoria: CATEGORIAS[0], nome: '', v_date: '' });
+      setNovoDoc({ categoria: CATEGORIAS[0], nome: '' });
       setModalNovoDoc(false);
       await carregarDocumentos();
       swalDark.fire({ icon: 'success', title: 'Sucesso!', text: 'Documento criado.', timer: 1500, showConfirmButton: false });
@@ -144,24 +128,179 @@ const Detalhes = () => {
     }
   };
 
-  const uploadPDF = async (arquivo, docId) => {
+  const editarVencimento = async (documento) => {
+    const { value: resultado } = await swalDark.fire({
+      title: 'Editar Vencimento',
+      html: `
+        <style>
+          .swal-venc-wrapper { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+          .swal-venc-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; text-align: left; margin-bottom: 4px; letter-spacing: 0.05em; }
+          #swal-date-wrapper { transition: opacity 0.2s; }
+          #swal-date-wrapper.disabled { opacity: 0.3; pointer-events: none; }
+          .swal-venc-toggle { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: background 0.2s; }
+          .swal-venc-toggle:hover { background: rgba(255,255,255,0.08); }
+          .swal-venc-toggle input[type=checkbox] { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
+          .swal-venc-toggle span { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+        </style>
+        <div class="swal-venc-wrapper">
+          <div id="swal-date-wrapper" class="${!documento.v_date ? 'disabled' : ''}">
+            <p class="swal-venc-label">Data de Vencimento</p>
+            <input type="date" id="swal-input-date" class="swal2-input" value="${documento.v_date || ''}" style="margin:0;">
+          </div>
+          <label class="swal-venc-toggle">
+            <input type="checkbox" id="swal-sem-venc" ${!documento.v_date ? 'checked' : ''}>
+            <span>Documento sem vencimento</span>
+          </label>
+        </div>
+        <script>
+          setTimeout(() => {
+            const cb = document.getElementById('swal-sem-venc');
+            const dw = document.getElementById('swal-date-wrapper');
+            cb.addEventListener('change', () => {
+              dw.classList.toggle('disabled', cb.checked);
+              if (cb.checked) document.getElementById('swal-input-date').value = '';
+            });
+          }, 0);
+        </script>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Salvar',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const semVenc = document.getElementById('swal-sem-venc').checked;
+        const data = document.getElementById('swal-input-date').value;
+        if (!semVenc && !data) {
+          Swal.showValidationMessage('Informe uma data ou marque "Sem vencimento".');
+          return false;
+        }
+        return semVenc ? '' : data;
+      }
+    });
+
+    if (resultado !== undefined) {
+      try {
+        const docRef = doc(db, 'empresas', empresa.id, 'documentos', documento.id);
+        await updateDoc(docRef, { v_date: resultado, status: calcularStatus(resultado) });
+        setDocAtivo(prev => prev ? { ...prev, v_date: resultado } : prev);
+        await carregarDocumentos();
+        swalDark.fire({ icon: 'success', title: 'Atualizado!', timer: 1500, showConfirmButton: false });
+      } catch (error) {
+        swalDark.fire({ icon: 'error', title: 'Erro', text: 'Erro ao atualizar data.' });
+      }
+    }
+  };
+
+  const adicionarPDFComData = async (documento) => {
+    const { value: formValues } = await swalDark.fire({
+      title: 'Adicionar PDF',
+      width: 480,
+      html: `
+        <style>
+          .spf-form { display:flex; flex-direction:column; gap:16px; margin-top:6px; }
+          .spf-label { font-size:0.72rem; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; text-align:left; letter-spacing:0.05em; margin-bottom:5px; display:block; }
+          .spf-drop {
+            border: 2px dashed rgba(59,130,246,0.35);
+            border-radius: 12px;
+            padding: 26px 16px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(59,130,246,0.04);
+            position: relative;
+            transition: all 0.2s;
+          }
+          .spf-drop:hover, .spf-drop.over { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+          .spf-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+          .spf-drop-icon { font-size:1.8rem; margin-bottom:6px; }
+          .spf-drop-hint { font-size:0.82rem; color:rgba(255,255,255,0.45); }
+          .spf-drop-hint strong { color:#3b82f6; }
+          .spf-fname { font-size:0.78rem; color:#10b981; margin-top:7px; font-weight:700; display:none; }
+          .spf-date { background:rgba(255,255,255,0.05)!important; border:1px solid rgba(255,255,255,0.1)!important; border-radius:10px!important; padding:10px 14px!important; color:white!important; font-size:0.9rem!important; width:100%!important; box-sizing:border-box!important; outline:none!important; margin:0!important; }
+          .spf-date:focus { border-color:#3b82f6!important; }
+          .spf-date:disabled { opacity:0.3!important; cursor:not-allowed!important; }
+          .spf-toggle { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; cursor:pointer; margin-top:6px; transition:background 0.2s; }
+          .spf-toggle:hover { background:rgba(255,255,255,0.08); }
+          .spf-toggle input[type=checkbox] { width:15px; height:15px; accent-color:#3b82f6; cursor:pointer; }
+          .spf-toggle span { font-size:0.82rem; color:rgba(255,255,255,0.65); }
+        </style>
+        <div class="spf-form">
+          <div>
+            <span class="spf-label">Arquivo PDF</span>
+            <div class="spf-drop" id="spf-drop">
+              <input type="file" accept=".pdf" id="spf-file">
+              <div class="spf-drop-icon">📄</div>
+              <div class="spf-drop-hint">Arraste aqui ou <strong>clique para selecionar</strong></div>
+              <div class="spf-fname" id="spf-fname"></div>
+            </div>
+          </div>
+          <div>
+            <span class="spf-label">Data de Vencimento</span>
+            <input type="date" id="spf-vdate" class="spf-date">
+            <label class="spf-toggle">
+              <input type="checkbox" id="spf-semvenc">
+              <span>Documento sem vencimento</span>
+            </label>
+          </div>
+        </div>
+        <script>
+          setTimeout(() => {
+            const fi = document.getElementById('spf-file');
+            const fn = document.getElementById('spf-fname');
+            const drop = document.getElementById('spf-drop');
+            const cb = document.getElementById('spf-semvenc');
+            const di = document.getElementById('spf-vdate');
+
+            fi.addEventListener('change', () => {
+              if (fi.files[0]) { fn.textContent = '✓ ' + fi.files[0].name; fn.style.display = 'block'; }
+            });
+            drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+            drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+            drop.addEventListener('drop', e => {
+              e.preventDefault(); drop.classList.remove('over');
+              const f = e.dataTransfer.files[0];
+              if (f && f.type === 'application/pdf') {
+                const dt = new DataTransfer(); dt.items.add(f); fi.files = dt.files;
+                fn.textContent = '✓ ' + f.name; fn.style.display = 'block';
+              }
+            });
+            cb.addEventListener('change', () => { di.disabled = cb.checked; if (cb.checked) di.value = ''; });
+          }, 0);
+        </script>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Enviar PDF',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const file = document.getElementById('spf-file').files[0];
+        const vdate = document.getElementById('spf-vdate').value;
+        const semVenc = document.getElementById('spf-semvenc').checked;
+        if (!file) { Swal.showValidationMessage('Selecione um arquivo PDF.'); return false; }
+        if (!semVenc && !vdate) { Swal.showValidationMessage('Informe a data de vencimento ou marque "Sem vencimento".'); return false; }
+        return { file, vdate: semVenc ? '' : vdate };
+      }
+    });
+
+    if (!formValues) return;
+    const { file, vdate } = formValues;
     setUploadando(true);
     try {
-      const nomeArquivoUnico = `${Date.now()}_${arquivo.name}`;
+      const nomeArquivoUnico = `${Date.now()}_${file.name}`;
       const caminhoStorage = `empresas/${empresa.id}/documentos/${nomeArquivoUnico}`;
       const arquivoRef = ref(storage, caminhoStorage);
-
-      await uploadBytes(arquivoRef, arquivo);
+      await uploadBytes(arquivoRef, file);
       const urlFinal = await getDownloadURL(arquivoRef);
-
-      const docRef = doc(db, 'empresas', empresa.id, 'documentos', docId);
-      const novoArquivoObj = { nome: arquivo.name, url: urlFinal, path: caminhoStorage };
-      
-      await updateDoc(docRef, { arquivos: arrayUnion(novoArquivoObj) });
+      const hoje = new Date();
+      const novaDataInsercao = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+      const docRef = doc(db, 'empresas', empresa.id, 'documentos', documento.id);
+      await updateDoc(docRef, {
+        arquivos: arrayUnion({ nome: file.name, url: urlFinal, path: caminhoStorage }),
+        i_date: novaDataInsercao,
+        v_date: vdate,
+        status: calcularStatus(vdate)
+      });
       await carregarDocumentos();
-      setDocAtivo(prev => prev?.id === docId ? { ...prev, arquivos: [...(prev?.arquivos || []), novoArquivoObj] } : prev);
-      
-      swalDark.fire({ icon: 'success', title: 'Enviado!', text: 'PDF salvo com sucesso.', timer: 1500, showConfirmButton: false });
+      swalDark.fire({ icon: 'success', title: 'Enviado!', text: 'PDF adicionado com sucesso.', timer: 1500, showConfirmButton: false });
     } catch (error) {
       swalDark.fire({ icon: 'error', title: 'Erro', text: 'Erro ao fazer upload do PDF.' });
     } finally {
@@ -179,9 +318,7 @@ const Detalhes = () => {
       cancelButtonText: '<span style="color: #ff4d4d">Cancelar</span>',
       confirmButtonText: 'Sim, remover!'
     });
-
     if (!result.isConfirmed) return;
-
     try {
       if (arquivoParaRemover.path) {
         await deleteObject(ref(storage, arquivoParaRemover.path)).catch(() => {});
@@ -206,19 +343,10 @@ const Detalhes = () => {
       cancelButtonText: '<span style="color: #ff4d4d">Cancelar</span>',
       confirmButtonText: 'Sim, excluir!'
     });
-
     if (!result.isConfirmed) return;
-
     try {
       if (documento.arquivos && documento.arquivos.length > 0) {
-        const promessas = documento.arquivos.map(arq => {
-          if (arq.path) {
-            const fileRef = ref(storage, arq.path);
-            return deleteObject(fileRef).catch(() => {});
-          }
-          return Promise.resolve();
-        });
-        await Promise.all(promessas);
+        await Promise.all(documento.arquivos.map(arq => arq.path ? deleteObject(ref(storage, arq.path)).catch(() => {}) : Promise.resolve()));
       }
       await deleteDoc(doc(db, 'empresas', empresa.id, 'documentos', documento.id));
       setMenuAberto(null);
@@ -290,14 +418,17 @@ const Detalhes = () => {
                           </button>
                           {menuAberto === documento.id && (
                             <div className="menu-dropdown">
-                              <label className="menu-item">
+                              <button className="menu-item" onClick={() => { adicionarPDFComData(documento); setMenuAberto(null); }}>
                                 ➕ Adicionar PDF
-                                <input type="file" accept=".pdf" style={{display:'none'}} onChange={(e) => e.target.files[0] && uploadPDF(e.target.files[0], documento.id)} />
-                              </label>
-                              <button className="menu-item" onClick={() => { setDocAtivo(documento); setModalPDFAberto(true); setMenuAberto(null); }}>
-                                👁️ Ver PDFs
                               </button>
-                              <button className="menu-item" style={{color: '#ff4d4d', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '5px'}} onClick={() => deletarDocumentoInteiro(documento)}>
+                              <button className="menu-item" onClick={() => { setDocAtivo(documento); setModalPDFAberto(true); setMenuAberto(null); }}>
+                                📄 Ver Arquivos
+                              </button>
+                              <button
+                                className="menu-item"
+                                style={{color: '#ff4d4d', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '5px'}}
+                                onClick={() => deletarDocumentoInteiro(documento)}
+                              >
                                 🗑️ Excluir Item
                               </button>
                             </div>
@@ -337,10 +468,6 @@ const Detalhes = () => {
               <label>Nome do Documento</label>
               <input type="text" placeholder="Ex: Ata de Fundação" value={novoDoc.nome} onChange={e => setNovoDoc({...novoDoc, nome: e.target.value})} />
             </div>
-            <div className="campo">
-              <label>Data de Vencimento</label>
-              <input type="date" value={novoDoc.v_date} onChange={e => setNovoDoc({...novoDoc, v_date: e.target.value})} />
-            </div>
             <button className="btn-salvar" onClick={salvarDocumento} disabled={salvando}>{salvando ? 'Salvando...' : 'Salvar Documento'}</button>
           </div>
         </div>
@@ -350,7 +477,18 @@ const Detalhes = () => {
         <div className="modal-overlay" onClick={() => setModalPDFAberto(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close-x" onClick={() => setModalPDFAberto(false)}>&times;</button>
-            <h3 style={{marginBottom: '20px', color: '#fff'}}>{docAtivo?.nome}</h3>
+            <h3 style={{marginBottom: '6px', color: '#fff'}}>{docAtivo?.nome}</h3>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px'}}>
+              <span style={{fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)'}}>
+                Vencimento: <span style={{color: 'rgba(255,255,255,0.6)'}}>{formatarDataBR(docAtivo?.v_date)}</span>
+              </span>
+              <button
+                onClick={() => editarVencimento(docAtivo)}
+                style={{background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3b82f6', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '6px'}}
+              >
+                ✏️ Editar
+              </button>
+            </div>
             {docAtivo?.arquivos?.length > 0 ? docAtivo.arquivos.map((arq, i) => (
               <div key={i} className="arquivo-linha">
                 <span style={{fontSize: '0.85rem', color: '#fff'}}>📄 {arq.nome}</span>
@@ -359,7 +497,7 @@ const Detalhes = () => {
                   <button className="btn-remover-file" onClick={() => removerPDF(arq)}>REMOVER</button>
                 </div>
               </div>
-            )) : <p style={{opacity: 0.5, padding: '20px 0', textAlign: 'center', color: '#fff'}}>Nenhum arquivo encontrado.</p>}
+            )) : <p style={{opacity: 0.5, padding: '10px 0 20px', textAlign: 'center', color: '#fff'}}>Nenhum arquivo encontrado.</p>}
           </div>
         </div>
       )}
