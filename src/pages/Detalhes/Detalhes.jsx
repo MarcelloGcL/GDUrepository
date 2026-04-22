@@ -152,17 +152,15 @@ const Detalhes = () => {
             <span>Documento sem vencimento</span>
           </label>
         </div>
-        <script>
-          setTimeout(() => {
-            const cb = document.getElementById('swal-sem-venc');
-            const dw = document.getElementById('swal-date-wrapper');
-            cb.addEventListener('change', () => {
-              dw.classList.toggle('disabled', cb.checked);
-              if (cb.checked) document.getElementById('swal-input-date').value = '';
-            });
-          }, 0);
-        </script>
       `,
+      didOpen: () => {
+        const cb = document.getElementById('swal-sem-venc');
+        const dw = document.getElementById('swal-date-wrapper');
+        cb.addEventListener('change', () => {
+          dw.classList.toggle('disabled', cb.checked);
+          if (cb.checked) document.getElementById('swal-input-date').value = '';
+        });
+      },
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: 'Salvar',
@@ -242,31 +240,48 @@ const Detalhes = () => {
             </label>
           </div>
         </div>
-        <script>
-          setTimeout(() => {
-            const fi = document.getElementById('spf-file');
-            const fn = document.getElementById('spf-fname');
-            const drop = document.getElementById('spf-drop');
-            const cb = document.getElementById('spf-semvenc');
-            const di = document.getElementById('spf-vdate');
-
-            fi.addEventListener('change', () => {
-              if (fi.files[0]) { fn.textContent = '✓ ' + fi.files[0].name; fn.style.display = 'block'; }
-            });
-            drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
-            drop.addEventListener('dragleave', () => drop.classList.remove('over'));
-            drop.addEventListener('drop', e => {
-              e.preventDefault(); drop.classList.remove('over');
-              const f = e.dataTransfer.files[0];
-              if (f && f.type === 'application/pdf') {
-                const dt = new DataTransfer(); dt.items.add(f); fi.files = dt.files;
-                fn.textContent = '✓ ' + f.name; fn.style.display = 'block';
-              }
-            });
-            cb.addEventListener('change', () => { di.disabled = cb.checked; if (cb.checked) di.value = ''; });
-          }, 0);
-        </script>
       `,
+      didOpen: () => {
+        const fi = document.getElementById('spf-file');
+        const fn = document.getElementById('spf-fname');
+        const drop = document.getElementById('spf-drop');
+        const cb = document.getElementById('spf-semvenc');
+        const di = document.getElementById('spf-vdate');
+
+        fi.addEventListener('change', () => {
+          if (fi.files[0]) {
+            fn.textContent = '✓ ' + fi.files[0].name;
+            fn.style.display = 'block';
+          }
+        });
+
+        drop.addEventListener('dragover', e => {
+          e.preventDefault();
+          drop.classList.add('over');
+        });
+
+        drop.addEventListener('dragleave', () => {
+          drop.classList.remove('over');
+        });
+
+        drop.addEventListener('drop', e => {
+          e.preventDefault();
+          drop.classList.remove('over');
+          const f = e.dataTransfer.files[0];
+          if (f && f.type === 'application/pdf') {
+            const dt = new DataTransfer();
+            dt.items.add(f);
+            fi.files = dt.files;
+            fn.textContent = '✓ ' + f.name;
+            fn.style.display = 'block';
+          }
+        });
+
+        cb.addEventListener('change', () => {
+          di.disabled = cb.checked;
+          if (cb.checked) di.value = '';
+        });
+      },
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: 'Enviar PDF',
@@ -401,6 +416,7 @@ const Detalhes = () => {
                 </div>
                 <div className="docs-lista">
                   {documentosPorCategoria(cat).map((documento) => {
+                    const temArquivo = documento.arquivos && documento.arquivos.length > 0;
                     const status = calcularStatus(documento.v_date);
                     return (
                       <div key={documento.id} className="doc-item">
@@ -408,9 +424,11 @@ const Detalhes = () => {
                         <div className="valor-data">{formatarDataBR(documento.v_date)}</div>
                         <div className="valor-data">{documento.i_date}</div>
                         <div className="status-col">
-                          <span className={`status-badge ${status}`}>
-                            {status === 'proximo' ? 'PRÓX. VENC.' : status.toUpperCase()}
-                          </span>
+                          {temArquivo && (
+                            <span className={`status-badge ${status}`}>
+                              {status === 'proximo' ? 'PRÓX. VENC.' : status.toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <div className="doc-acoes-wrapper" onClick={(e) => e.stopPropagation()}>
                           <button className="btn-acoes" onClick={() => setMenuAberto(menuAberto === documento.id ? null : documento.id)}>
