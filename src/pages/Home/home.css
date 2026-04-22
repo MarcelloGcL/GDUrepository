@@ -5,6 +5,25 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.os-title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 800;
+  flex: 1;
+  min-width: 250px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .btn-nova-empresa {
@@ -33,9 +52,7 @@
 }
 .btn-editais:hover { background: rgba(255, 255, 255, 0.15); }
 
-/* =========================================
-   BALÃO DO CALENDÁRIO
-   ========================================= */
+/* CALENDÁRIO */
 .calendario-balao {
   position: absolute;
   top: calc(100% + 12px);
@@ -95,7 +112,6 @@
   margin-bottom: 14px;
 }
 
-/* Grade de meses */
 .calendario-meses {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -132,7 +148,6 @@
   justify-content: center;
 }
 
-/* Grade de dias */
 .calendario-dias {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -171,7 +186,6 @@
   bottom: 3px;
 }
 
-/* Lista de editais do dia */
 .editais-lista { display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto; }
 
 .edital-item {
@@ -234,9 +248,7 @@
 }
 .btn-edital-remover:hover { background: rgba(255,77,77,0.2); }
 
-/* =========================================
-   CARDS DE EMPRESAS
-   ========================================= */
+/* CARDS DE EMPRESAS */
 .os-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -276,16 +288,14 @@
 .os-name { font-size: 1.1rem; font-weight: 700; color: #fff; }
 .os-cnpj { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
 
-/* =========================================
-   MODAIS
-   ========================================= */
+/* MODAIS */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; position: relative; }
 .modal-close-x { position: absolute; top: 15px; right: 20px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 28px; cursor: pointer; }
 
 .campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .campo label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; }
-.campo input, .campo select {
+.campo input, .campo select, .select-estilo-novo {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
@@ -294,25 +304,31 @@
   font-size: 0.9rem;
   outline: none;
 }
-.campo input:focus, .campo select:focus { border-color: #3b82f6; }
-.campo select option { background: #1e293b; color: white; }
+.campo input:focus, .campo select:focus, .select-estilo-novo:focus { border-color: #3b82f6; }
+.select-estilo-novo option { background: #1e293b; color: white; }
 
 .btn-salvar { width: 100%; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
 .btn-salvar:hover { background: #2563eb; }
 .btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* SweetAlert2 */
-.swal2-popup { border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 20px !important; font-family: inherit !important; }
-.swal2-confirm, .swal2-cancel { border-radius: 10px !important; font-weight: 700 !important; padding: 12px 24px !important; }
-.swal-cancel-btn { background: transparent !important; border: 1px solid rgba(255,77,77,0.4) !important; }
-.swal-cancel-btn:hover { background: rgba(255,77,77,0.1) !important; }
-
-/* =========================================
-   RESPONSIVO
-   ========================================= */
+/* RESPONSIVO */
 @media (max-width: 1100px) { .os-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 768px) {
+  .home-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .os-title { width: 100%; font-size: 1.5rem; margin-bottom: 10px; }
+  .header-actions { width: 100%; justify-content: flex-start; }
   .os-grid { grid-template-columns: repeat(2, 1fr); }
-  .calendario-balao { width: calc(100vw - 40px); right: -20px; }
+  .calendario-balao { 
+    width: calc(100vw - 40px); 
+    right: auto;
+    left: 0;
+    top: calc(100% + 10px);
+  }
 }
-@media (max-width: 480px) { .os-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { 
+  .os-grid { grid-template-columns: 1fr; }
+  .btn-editais, .btn-nova-empresa { width: 100%; text-align: center; }
+}

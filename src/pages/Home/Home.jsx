@@ -23,7 +23,6 @@ const Home = () => {
   const [salvando, setSalvando] = useState(false);
   const [novaEmpresa, setNovaEmpresa] = useState({ name: '', cnpj: '', logo: null });
 
-  // Calendário
   const [calendarioAberto, setCalendarioAberto] = useState(false);
   const [editais, setEditais] = useState([]);
   const [mesSelecionado, setMesSelecionado] = useState(null);
@@ -69,7 +68,6 @@ const Home = () => {
     try {
       const snapshot = await getDocs(collection(db, 'editais'));
       const lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Apaga automaticamente editais do ano anterior
       const hoje = new Date();
       const anoAtualNum = hoje.getFullYear();
       const expirados = lista.filter(e => {
@@ -194,31 +192,22 @@ const Home = () => {
     }
   };
 
-  const getDiasDoMes = (mes) => {
-    return new Date(anoAtual, mes + 1, 0).getDate();
-  };
-
-  const getEditaisDoMes = (mes) => {
-    return editais.filter(e => {
-      const d = new Date(e.dataPublicacao + 'T00:00:00');
-      return d.getMonth() === mes && d.getFullYear() === anoAtual;
-    });
-  };
-
-  const getEditaisDoDia = (mes, dia) => {
-    return editais.filter(e => {
-      const d = new Date(e.dataPublicacao + 'T00:00:00');
-      return d.getMonth() === mes && d.getDate() === dia && d.getFullYear() === anoAtual;
-    });
-  };
-
+  const getDiasDoMes = (mes) => new Date(anoAtual, mes + 1, 0).getDate();
+  const getEditaisDoMes = (mes) => editais.filter(e => {
+    const d = new Date(e.dataPublicacao + 'T00:00:00');
+    return d.getMonth() === mes && d.getFullYear() === anoAtual;
+  });
+  const getEditaisDoDia = (mes, dia) => editais.filter(e => {
+    const d = new Date(e.dataPublicacao + 'T00:00:00');
+    return d.getMonth() === mes && d.getDate() === dia && d.getFullYear() === anoAtual;
+  });
   const temEditalNoDia = (mes, dia) => getEditaisDoDia(mes, dia).length > 0;
 
   return (
     <main className="home-content">
       <div className="home-header">
         <h1 className="os-title">Gestão de Unidades</h1>
-        <div style={{display: 'flex', gap: '12px', position: 'relative'}}>
+        <div className="header-actions">
           <button className="btn-editais" onClick={() => { setCalendarioAberto(!calendarioAberto); setMesSelecionado(null); setDiaSelecionado(null); }}>
             📋 Diário Oficial do Estado
           </button>
@@ -266,7 +255,6 @@ const Home = () => {
                   <div className="cal-mes-titulo">{diaSelecionado} de {MESES[mesSelecionado]}</div>
                   <div className="editais-lista">
                     {getEditaisDoDia(mesSelecionado, diaSelecionado).map((edital, i) => {
-                      const emp = empresas.find(e => e.id === edital.empresaId);
                       return (
                         <div key={i} className="edital-item">
                           <div className="edital-empresa">
@@ -311,7 +299,6 @@ const Home = () => {
         </div>
       )}
 
-      {/* Modal Nova Empresa */}
       {modalAberto && (
         <div className="modal-overlay" onClick={() => setModalAberto(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -336,7 +323,6 @@ const Home = () => {
         </div>
       )}
 
-      {/* Modal Novo Edital */}
       {modalNovoEdital && (
         <div className="modal-overlay" onClick={() => setModalNovoEdital(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -344,7 +330,7 @@ const Home = () => {
             <h3 style={{color: '#fff', marginBottom: '24px'}}>Novo Edital</h3>
             <div className="campo">
               <label>Empresa</label>
-              <select value={novoEdital.empresaId} onChange={e => setNovoEdital({...novoEdital, empresaId: e.target.value})} style={{background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 14px', color: 'white', fontSize: '0.9rem', outline: 'none'}}>
+              <select value={novoEdital.empresaId} onChange={e => setNovoEdital({...novoEdital, empresaId: e.target.value})} className="select-estilo-novo">
                 <option value="">Selecione uma empresa</option>
                 {empresas.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
               </select>
