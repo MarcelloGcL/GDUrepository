@@ -128,29 +128,39 @@ const Detalhes = () => {
     }
   };
 
-  const editarVencimento = async (documento) => {
+  const editarDocumento = async (documento) => {
     const { value: resultado } = await swalDark.fire({
-      title: 'Editar Vencimento',
+      title: 'Editar Documento',
+      width: 460,
       html: `
         <style>
-          .swal-venc-wrapper { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
-          .swal-venc-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; text-align: left; margin-bottom: 4px; letter-spacing: 0.05em; }
-          #swal-date-wrapper { transition: opacity 0.2s; }
-          #swal-date-wrapper.disabled { opacity: 0.3; pointer-events: none; }
-          .swal-venc-toggle { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: background 0.2s; }
-          .swal-venc-toggle:hover { background: rgba(255,255,255,0.08); }
-          .swal-venc-toggle input[type=checkbox] { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
-          .swal-venc-toggle span { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+          .swal-edit-wrapper { display:flex; flex-direction:column; gap:16px; margin-top:4px; }
+          .swal-edit-field { display:flex; flex-direction:column; gap:6px; }
+          .swal-edit-label { font-size:0.72rem; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; text-align:left; letter-spacing:0.05em; }
+          .swal-edit-input { background:rgba(255,255,255,0.05)!important; border:1px solid rgba(255,255,255,0.1)!important; border-radius:10px!important; padding:10px 14px!important; color:white!important; font-size:0.9rem!important; width:100%!important; box-sizing:border-box!important; outline:none!important; margin:0!important; }
+          .swal-edit-input:focus { border-color:#3b82f6!important; }
+          #swal-date-wrapper { transition:opacity 0.2s; }
+          #swal-date-wrapper.disabled { opacity:0.3; pointer-events:none; }
+          .swal-venc-toggle { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 14px; cursor:pointer; transition:background 0.2s; }
+          .swal-venc-toggle:hover { background:rgba(255,255,255,0.08); }
+          .swal-venc-toggle input[type=checkbox] { width:15px; height:15px; accent-color:#3b82f6; cursor:pointer; }
+          .swal-venc-toggle span { font-size:0.82rem; color:rgba(255,255,255,0.65); }
         </style>
-        <div class="swal-venc-wrapper">
-          <div id="swal-date-wrapper" class="${!documento.v_date ? 'disabled' : ''}">
-            <p class="swal-venc-label">Data de Vencimento</p>
-            <input type="date" id="swal-input-date" class="swal2-input" value="${documento.v_date || ''}" style="margin:0;">
+        <div class="swal-edit-wrapper">
+          <div class="swal-edit-field">
+            <span class="swal-edit-label">Nome do Documento</span>
+            <input type="text" id="swal-edit-nome" class="swal-edit-input" value="${documento.nome}">
           </div>
-          <label class="swal-venc-toggle">
-            <input type="checkbox" id="swal-sem-venc" ${!documento.v_date ? 'checked' : ''}>
-            <span>Documento sem vencimento</span>
-          </label>
+          <div class="swal-edit-field">
+            <span class="swal-edit-label">Data de Vencimento</span>
+            <div id="swal-date-wrapper" class="${!documento.v_date ? 'disabled' : ''}">
+              <input type="date" id="swal-edit-vdate" class="swal-edit-input" value="${documento.v_date || ''}">
+            </div>
+            <label class="swal-venc-toggle" style="margin-top:6px;">
+              <input type="checkbox" id="swal-sem-venc" ${!documento.v_date ? 'checked' : ''}>
+              <span>Documento sem vencimento</span>
+            </label>
+          </div>
         </div>
       `,
       didOpen: () => {
@@ -158,7 +168,7 @@ const Detalhes = () => {
         const dw = document.getElementById('swal-date-wrapper');
         cb.addEventListener('change', () => {
           dw.classList.toggle('disabled', cb.checked);
-          if (cb.checked) document.getElementById('swal-input-date').value = '';
+          if (cb.checked) document.getElementById('swal-edit-vdate').value = '';
         });
       },
       focusConfirm: false,
@@ -166,25 +176,34 @@ const Detalhes = () => {
       confirmButtonText: 'Salvar',
       cancelButtonText: 'Cancelar',
       preConfirm: () => {
+        const nome = document.getElementById('swal-edit-nome').value.trim();
         const semVenc = document.getElementById('swal-sem-venc').checked;
-        const data = document.getElementById('swal-input-date').value;
-        if (!semVenc && !data) {
+        const vdate = document.getElementById('swal-edit-vdate').value;
+        if (!nome) {
+          Swal.showValidationMessage('O nome não pode estar vazio.');
+          return false;
+        }
+        if (!semVenc && !vdate) {
           Swal.showValidationMessage('Informe uma data ou marque "Sem vencimento".');
           return false;
         }
-        return semVenc ? '' : data;
+        return { nome, vdate: semVenc ? '' : vdate };
       }
     });
 
-    if (resultado !== undefined) {
+    if (resultado) {
       try {
         const docRef = doc(db, 'empresas', empresa.id, 'documentos', documento.id);
-        await updateDoc(docRef, { v_date: resultado, status: calcularStatus(resultado) });
-        setDocAtivo(prev => prev ? { ...prev, v_date: resultado } : prev);
+        await updateDoc(docRef, {
+          nome: resultado.nome,
+          v_date: resultado.vdate,
+          status: calcularStatus(resultado.vdate)
+        });
+        setDocAtivo(prev => prev ? { ...prev, nome: resultado.nome, v_date: resultado.vdate } : prev);
         await carregarDocumentos();
         swalDark.fire({ icon: 'success', title: 'Atualizado!', timer: 1500, showConfirmButton: false });
       } catch (error) {
-        swalDark.fire({ icon: 'error', title: 'Erro', text: 'Erro ao atualizar data.' });
+        swalDark.fire({ icon: 'error', title: 'Erro', text: 'Erro ao atualizar o documento.' });
       }
     }
   };
@@ -197,17 +216,8 @@ const Detalhes = () => {
         <style>
           .spf-form { display:flex; flex-direction:column; gap:16px; margin-top:6px; }
           .spf-label { font-size:0.72rem; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; text-align:left; letter-spacing:0.05em; margin-bottom:5px; display:block; }
-          .spf-drop {
-            border: 2px dashed rgba(59,130,246,0.35);
-            border-radius: 12px;
-            padding: 26px 16px;
-            text-align: center;
-            cursor: pointer;
-            background: rgba(59,130,246,0.04);
-            position: relative;
-            transition: all 0.2s;
-          }
-          .spf-drop:hover, .spf-drop.over { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+          .spf-drop { border:2px dashed rgba(59,130,246,0.35); border-radius:12px; padding:26px 16px; text-align:center; cursor:pointer; background:rgba(59,130,246,0.04); position:relative; transition:all 0.2s; }
+          .spf-drop:hover, .spf-drop.over { border-color:#3b82f6; background:rgba(59,130,246,0.1); }
           .spf-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
           .spf-drop-icon { font-size:1.8rem; margin-bottom:6px; }
           .spf-drop-hint { font-size:0.82rem; color:rgba(255,255,255,0.45); }
@@ -268,7 +278,6 @@ const Detalhes = () => {
         };
 
         fi.addEventListener('change', () => renderFileList(fi.files));
-
         drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
         drop.addEventListener('dragleave', () => drop.classList.remove('over'));
         drop.addEventListener('drop', e => {
@@ -282,7 +291,6 @@ const Detalhes = () => {
             renderFileList(fi.files);
           }
         });
-
         cb.addEventListener('change', () => {
           di.disabled = cb.checked;
           if (cb.checked) di.value = '';
@@ -308,7 +316,6 @@ const Detalhes = () => {
     try {
       const hoje = new Date();
       const novaDataInsercao = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
-
       const uploads = await Promise.all(files.map(async (file) => {
         const nomeArquivoUnico = `${Date.now()}_${file.name}`;
         const caminhoStorage = `empresas/${empresa.id}/documentos/${nomeArquivoUnico}`;
@@ -317,7 +324,6 @@ const Detalhes = () => {
         const urlFinal = await getDownloadURL(arquivoRef);
         return { nome: file.name, url: urlFinal, path: caminhoStorage };
       }));
-
       const docRef = doc(db, 'empresas', empresa.id, 'documentos', documento.id);
       await updateDoc(docRef, {
         arquivos: arrayUnion(...uploads),
@@ -325,7 +331,6 @@ const Detalhes = () => {
         v_date: vdate,
         status: calcularStatus(vdate)
       });
-
       await carregarDocumentos();
       swalDark.fire({
         icon: 'success',
@@ -513,18 +518,18 @@ const Detalhes = () => {
         <div className="modal-overlay" onClick={() => setModalPDFAberto(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close-x" onClick={() => setModalPDFAberto(false)}>&times;</button>
-            <h3 style={{marginBottom: '6px', color: '#fff'}}>{docAtivo?.nome}</h3>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px'}}>
-              <span style={{fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)'}}>
-                Vencimento: <span style={{color: 'rgba(255,255,255,0.6)'}}>{formatarDataBR(docAtivo?.v_date)}</span>
-              </span>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px'}}>
+              <h3 style={{color: '#fff', margin: 0}}>{docAtivo?.nome}</h3>
               <button
-                onClick={() => editarVencimento(docAtivo)}
-                style={{background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3b82f6', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '6px'}}
+                onClick={() => editarDocumento(docAtivo)}
+                style={{background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3b82f6', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', whiteSpace: 'nowrap'}}
               >
                 ✏️ Editar
               </button>
             </div>
+            <p style={{fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginBottom: '20px'}}>
+              Vencimento: <span style={{color: 'rgba(255,255,255,0.6)'}}>{formatarDataBR(docAtivo?.v_date)}</span>
+            </p>
             {docAtivo?.arquivos?.length > 0 ? docAtivo.arquivos.map((arq, i) => (
               <div key={i} className="arquivo-linha">
                 <span style={{fontSize: '0.85rem', color: '#fff'}}>📄 {arq.nome}</span>
