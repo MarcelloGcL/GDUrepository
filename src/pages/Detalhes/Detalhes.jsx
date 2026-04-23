@@ -191,7 +191,7 @@ const Detalhes = () => {
 
   const adicionarPDFComData = async (documento) => {
     const { value: formValues } = await swalDark.fire({
-      title: 'Adicionar PDF',
+      title: 'Adicionar PDFs',
       width: 480,
       html: `
         <style>
@@ -212,7 +212,9 @@ const Detalhes = () => {
           .spf-drop-icon { font-size:1.8rem; margin-bottom:6px; }
           .spf-drop-hint { font-size:0.82rem; color:rgba(255,255,255,0.45); }
           .spf-drop-hint strong { color:#3b82f6; }
-          .spf-fname { font-size:0.78rem; color:#10b981; margin-top:7px; font-weight:700; display:none; }
+          .spf-flist { display:flex; flex-direction:column; gap:5px; margin-top:10px; }
+          .spf-fitem { font-size:0.78rem; color:#10b981; font-weight:700; text-align:left; display:flex; align-items:center; gap:6px; }
+          .spf-fcount { font-size:0.72rem; color:rgba(255,255,255,0.35); margin-top:4px; }
           .spf-date { background:rgba(255,255,255,0.05)!important; border:1px solid rgba(255,255,255,0.1)!important; border-radius:10px!important; padding:10px 14px!important; color:white!important; font-size:0.9rem!important; width:100%!important; box-sizing:border-box!important; outline:none!important; margin:0!important; }
           .spf-date:focus { border-color:#3b82f6!important; }
           .spf-date:disabled { opacity:0.3!important; cursor:not-allowed!important; }
@@ -223,12 +225,12 @@ const Detalhes = () => {
         </style>
         <div class="spf-form">
           <div>
-            <span class="spf-label">Arquivo PDF</span>
+            <span class="spf-label">Arquivos PDF</span>
             <div class="spf-drop" id="spf-drop">
-              <input type="file" accept=".pdf" id="spf-file">
+              <input type="file" accept=".pdf" id="spf-file" multiple>
               <div class="spf-drop-icon">📄</div>
-              <div class="spf-drop-hint">Arraste aqui ou <strong>clique para selecionar</strong></div>
-              <div class="spf-fname" id="spf-fname"></div>
+              <div class="spf-drop-hint">Arraste aqui ou <strong>clique para selecionar</strong><br><span style="font-size:0.75rem;opacity:0.6;">Você pode selecionar vários arquivos de uma vez</span></div>
+              <div class="spf-flist" id="spf-flist"></div>
             </div>
           </div>
           <div>
@@ -243,37 +245,41 @@ const Detalhes = () => {
       `,
       didOpen: () => {
         const fi = document.getElementById('spf-file');
-        const fn = document.getElementById('spf-fname');
+        const flist = document.getElementById('spf-flist');
         const drop = document.getElementById('spf-drop');
         const cb = document.getElementById('spf-semvenc');
         const di = document.getElementById('spf-vdate');
 
-        fi.addEventListener('change', () => {
-          if (fi.files[0]) {
-            fn.textContent = '✓ ' + fi.files[0].name;
-            fn.style.display = 'block';
+        const renderFileList = (files) => {
+          flist.innerHTML = '';
+          if (!files || files.length === 0) return;
+          Array.from(files).forEach(f => {
+            const item = document.createElement('div');
+            item.className = 'spf-fitem';
+            item.innerHTML = `<span>✓</span><span>${f.name}</span>`;
+            flist.appendChild(item);
+          });
+          if (files.length > 1) {
+            const count = document.createElement('div');
+            count.className = 'spf-fcount';
+            count.textContent = `${files.length} arquivos selecionados`;
+            flist.appendChild(count);
           }
-        });
+        };
 
-        drop.addEventListener('dragover', e => {
-          e.preventDefault();
-          drop.classList.add('over');
-        });
+        fi.addEventListener('change', () => renderFileList(fi.files));
 
-        drop.addEventListener('dragleave', () => {
-          drop.classList.remove('over');
-        });
-
+        drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+        drop.addEventListener('dragleave', () => drop.classList.remove('over'));
         drop.addEventListener('drop', e => {
           e.preventDefault();
           drop.classList.remove('over');
-          const f = e.dataTransfer.files[0];
-          if (f && f.type === 'application/pdf') {
+          const pdfs = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+          if (pdfs.length > 0) {
             const dt = new DataTransfer();
-            dt.items.add(f);
+            pdfs.forEach(f => dt.items.add(f));
             fi.files = dt.files;
-            fn.textContent = '✓ ' + f.name;
-            fn.style.display = 'block';
+            renderFileList(fi.files);
           }
         });
 
@@ -284,40 +290,52 @@ const Detalhes = () => {
       },
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: 'Enviar PDF',
+      confirmButtonText: 'Enviar PDFs',
       cancelButtonText: 'Cancelar',
       preConfirm: () => {
-        const file = document.getElementById('spf-file').files[0];
+        const files = document.getElementById('spf-file').files;
         const vdate = document.getElementById('spf-vdate').value;
         const semVenc = document.getElementById('spf-semvenc').checked;
-        if (!file) { Swal.showValidationMessage('Selecione um arquivo PDF.'); return false; }
+        if (!files || files.length === 0) { Swal.showValidationMessage('Selecione ao menos um arquivo PDF.'); return false; }
         if (!semVenc && !vdate) { Swal.showValidationMessage('Informe a data de vencimento ou marque "Sem vencimento".'); return false; }
-        return { file, vdate: semVenc ? '' : vdate };
+        return { files: Array.from(files), vdate: semVenc ? '' : vdate };
       }
     });
 
     if (!formValues) return;
-    const { file, vdate } = formValues;
+    const { files, vdate } = formValues;
     setUploadando(true);
     try {
-      const nomeArquivoUnico = `${Date.now()}_${file.name}`;
-      const caminhoStorage = `empresas/${empresa.id}/documentos/${nomeArquivoUnico}`;
-      const arquivoRef = ref(storage, caminhoStorage);
-      await uploadBytes(arquivoRef, file);
-      const urlFinal = await getDownloadURL(arquivoRef);
       const hoje = new Date();
       const novaDataInsercao = `${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`;
+
+      const uploads = await Promise.all(files.map(async (file) => {
+        const nomeArquivoUnico = `${Date.now()}_${file.name}`;
+        const caminhoStorage = `empresas/${empresa.id}/documentos/${nomeArquivoUnico}`;
+        const arquivoRef = ref(storage, caminhoStorage);
+        await uploadBytes(arquivoRef, file);
+        const urlFinal = await getDownloadURL(arquivoRef);
+        return { nome: file.name, url: urlFinal, path: caminhoStorage };
+      }));
+
       const docRef = doc(db, 'empresas', empresa.id, 'documentos', documento.id);
       await updateDoc(docRef, {
-        arquivos: arrayUnion({ nome: file.name, url: urlFinal, path: caminhoStorage }),
+        arquivos: arrayUnion(...uploads),
         i_date: novaDataInsercao,
         v_date: vdate,
         status: calcularStatus(vdate)
       });
+
       await carregarDocumentos();
-      swalDark.fire({ icon: 'success', title: 'Enviado!', text: 'PDF adicionado com sucesso.', timer: 1500, showConfirmButton: false });
+      swalDark.fire({
+        icon: 'success',
+        title: 'Enviado!',
+        text: files.length > 1 ? `${files.length} PDFs adicionados com sucesso.` : 'PDF adicionado com sucesso.',
+        timer: 1500,
+        showConfirmButton: false
+      });
     } catch (error) {
-      swalDark.fire({ icon: 'error', title: 'Erro', text: 'Erro ao fazer upload do PDF.' });
+      swalDark.fire({ icon: 'error', title: 'Erro', text: 'Erro ao fazer upload dos arquivos.' });
     } finally {
       setUploadando(false);
     }
@@ -466,7 +484,7 @@ const Detalhes = () => {
         <div className="modal-overlay">
           <div style={{color: '#fff', fontSize: '1.2rem', textAlign: 'center'}}>
             <div style={{fontSize: '3rem', marginBottom: '16px'}}>📤</div>
-            Enviando PDF...
+            Enviando PDFs...
           </div>
         </div>
       )}
