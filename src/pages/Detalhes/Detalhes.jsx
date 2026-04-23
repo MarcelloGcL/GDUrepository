@@ -166,10 +166,22 @@ const Detalhes = () => {
       didOpen: () => {
         const cb = document.getElementById('swal-sem-venc');
         const dw = document.getElementById('swal-date-wrapper');
+        const nomeInput = document.getElementById('swal-edit-nome');
+
         cb.addEventListener('change', () => {
           dw.classList.toggle('disabled', cb.checked);
           if (cb.checked) document.getElementById('swal-edit-vdate').value = '';
         });
+
+        nomeInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            Swal.clickConfirm();
+          }
+        });
+
+        nomeInput.focus();
+        nomeInput.setSelectionRange(nomeInput.value.length, nomeInput.value.length);
       },
       focusConfirm: false,
       showCancelButton: true,
@@ -518,8 +530,11 @@ const Detalhes = () => {
         <div className="modal-overlay" onClick={() => setModalPDFAberto(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close-x" onClick={() => setModalPDFAberto(false)}>&times;</button>
-            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px'}}>
-              <h3 style={{color: '#fff', margin: 0}}>{docAtivo?.nome}</h3>
+            <h3 style={{color: '#fff', marginBottom: '4px'}}>{docAtivo?.nome}</h3>
+            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px'}}>
+              <p style={{fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', margin: 0}}>
+                Vencimento: <span style={{color: 'rgba(255,255,255,0.6)'}}>{formatarDataBR(docAtivo?.v_date)}</span>
+              </p>
               <button
                 onClick={() => editarDocumento(docAtivo)}
                 style={{background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3b82f6', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700, padding: '5px 12px', borderRadius: '6px', whiteSpace: 'nowrap'}}
@@ -527,9 +542,6 @@ const Detalhes = () => {
                 ✏️ Editar
               </button>
             </div>
-            <p style={{fontSize: '0.8rem', color: 'rgba(255,255,255,0.35)', marginBottom: '20px'}}>
-              Vencimento: <span style={{color: 'rgba(255,255,255,0.6)'}}>{formatarDataBR(docAtivo?.v_date)}</span>
-            </p>
             {docAtivo?.arquivos?.length > 0 ? docAtivo.arquivos.map((arq, i) => (
               <div key={i} className="arquivo-linha">
                 <span style={{fontSize: '0.85rem', color: '#fff'}}>📄 {arq.nome}</span>
